@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/preference_keys.dart';
-import '../models/cart_item_model.dart';
-import '../models/enquiry_model.dart';
-import '../models/user_model.dart';
+
+import '../../utils/models/cart_item_model.dart';
+import '../../utils/models/enquiry_model.dart';
+import '../../utils/models/user_model.dart';
+import '../../utils/preference_keys/preference_keys.dart';
 
 /// Service managing persistent local data via SharedPreferences.
 class StorageService {
@@ -51,6 +52,7 @@ class StorageService {
     await _prefs.remove(PreferenceKeys.userEmail);
     await _prefs.remove(PreferenceKeys.userName);
     await _prefs.remove(PreferenceKeys.userSession);
+    await _prefs.remove(PreferenceKeys.tokenKey);
   }
 
   // ----------------------------------------------------
@@ -59,17 +61,20 @@ class StorageService {
   List<CartItem> getCartItems() {
     final jsonStr = _prefs.getString(PreferenceKeys.cartItems);
     if (jsonStr == null || jsonStr.isEmpty) return [];
+
     try {
       final list = jsonDecode(jsonStr) as List<dynamic>;
-      return list.map((e) => CartItem.fromJson(e as Map<String, dynamic>)).toList();
+      return list
+          .map((item) => CartItem.fromJson(item as Map<String, dynamic>))
+          .toList();
     } catch (_) {
       return [];
     }
   }
 
   Future<void> saveCartItems(List<CartItem> items) async {
-    final jsonStr = jsonEncode(items.map((e) => e.toJson()).toList());
-    await _prefs.setString(PreferenceKeys.cartItems, jsonStr);
+    final list = items.map((item) => item.toJson()).toList();
+    await _prefs.setString(PreferenceKeys.cartItems, jsonEncode(list));
   }
 
   Future<void> clearCart() async {
@@ -77,23 +82,26 @@ class StorageService {
   }
 
   // ----------------------------------------------------
-  // Enquiry History Management
+  // Submitted Enquiries History
   // ----------------------------------------------------
   List<Enquiry> getEnquiries() {
     final jsonStr = _prefs.getString(PreferenceKeys.enquiryHistory);
     if (jsonStr == null || jsonStr.isEmpty) return [];
+
     try {
       final list = jsonDecode(jsonStr) as List<dynamic>;
-      return list.map((e) => Enquiry.fromJson(e as Map<String, dynamic>)).toList();
+      return list
+          .map((item) => Enquiry.fromJson(item as Map<String, dynamic>))
+          .toList();
     } catch (_) {
       return [];
     }
   }
 
   Future<void> saveEnquiry(Enquiry enquiry) async {
-    final existing = getEnquiries();
-    final updated = [enquiry, ...existing];
-    final jsonStr = jsonEncode(updated.map((e) => e.toJson()).toList());
-    await _prefs.setString(PreferenceKeys.enquiryHistory, jsonStr);
+    final current = getEnquiries();
+    current.insert(0, enquiry);
+    final list = current.map((item) => item.toJson()).toList();
+    await _prefs.setString(PreferenceKeys.enquiryHistory, jsonEncode(list));
   }
 }

@@ -3,21 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/app_colors.dart';
-import 'core/app_routes.dart';
-import 'core/app_theme.dart';
-import 'data/repositories/auth_repository.dart';
-import 'data/repositories/cart_repository.dart';
-import 'data/repositories/enquiry_repository.dart';
-import 'data/repositories/product_repository.dart';
-import 'data/services/api_service.dart';
-import 'data/services/storage_service.dart';
-import 'logic/auth/auth_cubit.dart';
-import 'logic/cart/cart_cubit.dart';
-import 'logic/enquiry/enquiry_cubit.dart';
-import 'logic/product/product_cubit.dart';
+import 'utils/routes/routes.dart';
+import 'utils/app_colors.dart';
+import 'utils/app_theme.dart';
+import 'view/auth/auth_cubit.dart';
+import 'view/cart/cart_cubit.dart';
+import 'view/enquiry/enquiry_cubit.dart';
+import 'view/product/product_cubit.dart';
 
-void main() async {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> shallKey = GlobalKey<NavigatorState>();
+late SharedPreferences sharedPreferences;
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set system navigation overlay styling
@@ -31,63 +29,37 @@ void main() async {
   );
 
   // Initialize persistent storage
-  final sharedPreferences = await SharedPreferences.getInstance();
-  final storageService = StorageService(sharedPreferences);
+  sharedPreferences = await SharedPreferences.getInstance();
 
-  // Initialize network & repositories
-  final apiService = ApiService();
-  final productRepository = ProductRepository(apiService: apiService);
-  final cartRepository = CartRepository(storageService);
-  final enquiryRepository = EnquiryRepository(storageService);
-  final authRepository = AuthRepository(storageService);
-
-  runApp(
-    VyapaarHubApp(
-      productRepository: productRepository,
-      cartRepository: cartRepository,
-      enquiryRepository: enquiryRepository,
-      authRepository: authRepository,
-    ),
-  );
+  runApp(const VyapaarHubApp());
 }
 
 /// Root widget configuring Cubit providers, Material 3 theming, and GoRouter navigation.
 class VyapaarHubApp extends StatelessWidget {
-  final ProductRepository productRepository;
-  final CartRepository cartRepository;
-  final EnquiryRepository enquiryRepository;
-  final AuthRepository authRepository;
-
-  const VyapaarHubApp({
-    super.key,
-    required this.productRepository,
-    required this.cartRepository,
-    required this.enquiryRepository,
-    required this.authRepository,
-  });
+  const VyapaarHubApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthCubit>(
-          create: (_) => AuthCubit(authRepository),
+          create: (_) => AuthCubit(),
         ),
         BlocProvider<ProductCubit>(
-          create: (_) => ProductCubit(productRepository),
+          create: (_) => ProductCubit(),
         ),
         BlocProvider<CartCubit>(
-          create: (_) => CartCubit(cartRepository),
+          create: (_) => CartCubit(),
         ),
         BlocProvider<EnquiryCubit>(
-          create: (_) => EnquiryCubit(enquiryRepository),
+          create: (_) => EnquiryCubit(),
         ),
       ],
       child: MaterialApp.router(
         title: 'VyapaarHub — B2B Wholesale Marketplace',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.router,
+        routerConfig: router,
       ),
     );
   }

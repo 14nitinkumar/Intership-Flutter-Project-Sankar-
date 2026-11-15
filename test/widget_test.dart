@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vyapaar_hub/data/models/product_model.dart';
+import 'package:vyapaar_hub/utils/models/product_model.dart';
 
 void main() {
   testWidgets('VyapaarHub app smoke test', (WidgetTester tester) async {
