@@ -22,9 +22,6 @@ The project implements a feature-driven, modular architecture following Linkfres
 ```
 lib/
 ├── main.dart                                       # App entry point, navigator keys, global Cubits, MaterialApp.router
-├── data/
-│   └── services/
-│       └── storage_service.dart                    # SharedPreferences local persistence service
 ├── utils/
 │   ├── app_colors.dart                             # Primary brand color tokens (Navy #172B4D, Teal #16A085, Surface)
 │   ├── app_theme.dart                              # Material 3 light theme definition
